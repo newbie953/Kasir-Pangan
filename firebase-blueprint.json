@@ -1,0 +1,74 @@
+{
+  "entities": {
+    "DailyReport": {
+      "collection": "sales_reports",
+      "fields": {
+        "userId": { "type": "string", "required": true },
+        "reportDate": { "type": "string", "required": true },
+        "totalOrders": { "type": "number", "required": true },
+        "totalRevenue": { "type": "number", "required": true },
+        "totalCash": { "type": "number", "required": true },
+        "totalQris": { "type": "number", "required": true },
+        "estimatedProfit": { "type": "number", "required": true },
+        "averageTicket": { "type": "number", "required": true },
+        "updatedAt": { "type": "timestamp", "required": false }
+      }
+    },
+    "Laporan": {
+      "collection": "laporan",
+      "fields": {
+        "userId": { "type": "string", "required": true },
+        "reportDate": { "type": "string", "required": true },
+        "totalOrders": { "type": "number", "required": true },
+        "totalRevenue": { "type": "number", "required": true },
+        "totalCash": { "type": "number", "required": true },
+        "totalQris": { "type": "number", "required": true },
+        "estimatedProfit": { "type": "number", "required": true },
+        "averageTicket": { "type": "number", "required": true },
+        "updatedAt": { "type": "timestamp", "required": false }
+      }
+    },
+    "LaporanTutupToko": {
+      "collection": "laporan_tutup_toko",
+      "fields": {
+        "userId": { "type": "string", "required": true },
+        "reportDate": { "type": "string", "required": true },
+        "storeStatus": { "type": "string", "required": true },
+        "totalOrders": { "type": "number", "required": true },
+        "totalRevenue": { "type": "number", "required": true },
+        "totalCash": { "type": "number", "required": true },
+        "totalQris": { "type": "number", "required": true },
+        "estimatedProfit": { "type": "number", "required": true },
+        "syncedAt": { "type": "timestamp", "required": false }
+      }
+    },
+    "CloudTransaction": {
+      "collection": "transactions",
+      "fields": {
+        "userId": { "type": "string", "required": true },
+        "invoiceNumber": { "type": "string", "required": true },
+        "timestamp": { "type": "timestamp", "required": true },
+        "customerName": { "type": "string", "required": true },
+        "orderType": { "type": "string", "required": true },
+        "totalAmount": { "type": "number", "required": true },
+        "finalAmount": { "type": "number", "required": true },
+        "paymentMethod": { "type": "string", "required": true },
+        "itemsCount": { "type": "number", "required": true }
+      }
+    },
+    "LaporanTransaksi": {
+      "collection": "laporan_transaksi",
+      "fields": {
+        "userId": { "type": "string", "required": true },
+        "invoiceNumber": { "type": "string", "required": true },
+        "timestamp": { "type": "timestamp", "required": true },
+        "customerName": { "type": "string", "required": true },
+        "orderType": { "type": "string", "required": true },
+        "totalAmount": { "type": "number", "required": true },
+        "finalAmount": { "type": "number", "required": true },
+        "paymentMethod": { "type": "string", "required": true },
+        "itemsCount": { "type": "number", "required": true }
+      }
+    }
+  }
+}

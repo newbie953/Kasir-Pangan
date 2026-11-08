@@ -1,0 +1,6 @@
+{
+  "name": "DapurKasir",
+  "description": "Aplikasi kasir makanan real-time dengan form web app pemesanan pelanggan, dashboard web laporan transaksi & laba menggunakan Firebase Realtime Database tanpa firestore, serta cetak struk bluetooth.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

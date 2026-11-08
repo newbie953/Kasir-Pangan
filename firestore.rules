@@ -1,0 +1,71 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidReport(data) {
+      return data.userId is string &&
+             data.reportDate is string &&
+             data.totalOrders is number &&
+             data.totalRevenue is number &&
+             data.totalCash is number &&
+             data.totalQris is number &&
+             data.estimatedProfit is number;
+    }
+
+    function isValidClosing(data) {
+      return data.userId is string &&
+             data.reportDate is string &&
+             data.totalOrders is number &&
+             data.totalRevenue is number;
+    }
+
+    function isValidTransaction(data) {
+      return data.userId is string &&
+             data.invoiceNumber is string &&
+             data.customerName is string &&
+             data.totalAmount is number &&
+             data.finalAmount is number &&
+             data.paymentMethod is string;
+    }
+
+    // Tabel Laporan Penjualan (sales_reports & laporan)
+    match /sales_reports/{reportId} {
+      allow read: if true;
+      allow create, update: if (isAuthenticated() && isOwner(request.resource.data.userId)) || isValidReport(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    match /laporan/{reportId} {
+      allow read: if true;
+      allow create, update: if (isAuthenticated() && isOwner(request.resource.data.userId)) || isValidReport(request.resource.data) || isValidClosing(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    match /laporan_tutup_toko/{reportId} {
+      allow read: if true;
+      allow create, update: if (isAuthenticated() && isOwner(request.resource.data.userId)) || isValidClosing(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    // Tabel Laporan Transaksi (transactions & laporan_transaksi)
+    match /transactions/{transactionId} {
+      allow read: if true;
+      allow create, update: if (isAuthenticated() && isOwner(request.resource.data.userId)) || isValidTransaction(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+
+    match /laporan_transaksi/{transactionId} {
+      allow read: if true;
+      allow create, update: if (isAuthenticated() && isOwner(request.resource.data.userId)) || isValidTransaction(request.resource.data);
+      allow delete: if isAuthenticated() && isOwner(resource.data.userId);
+    }
+  }
+}

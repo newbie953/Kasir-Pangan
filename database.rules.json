@@ -1,0 +1,37 @@
+{
+  "rules": {
+    ".read": true,
+    "sales_reports": {
+      ".read": true,
+      "$reportDate": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['reportDate', 'totalOrders', 'totalRevenue'])"
+      }
+    },
+    "laporan": {
+      ".read": true,
+      "$reportDate": {
+        ".write": true
+      }
+    },
+    "laporan_tutup_toko": {
+      ".read": true,
+      "$reportDate": {
+        ".write": true
+      }
+    },
+    "transactions": {
+      ".read": true,
+      "$invoiceNumber": {
+        ".write": true,
+        ".validate": "newData.hasChildren(['invoiceNumber', 'customerName', 'totalAmount', 'paymentMethod'])"
+      }
+    },
+    "laporan_transaksi": {
+      ".read": true,
+      "$invoiceNumber": {
+        ".write": true
+      }
+    }
+  }
+}
