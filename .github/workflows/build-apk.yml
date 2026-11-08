@@ -1,0 +1,140 @@
+name: Build Android APK
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build Fahfile APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Setup Android SDK Environment & Licenses
+        run: |
+          echo "Menyiapkan environment Android SDK..."
+          export ANDROID_HOME=/usr/local/lib/android/sdk
+          export ANDROID_SDK_ROOT=/usr/local/lib/android/sdk
+          echo "ANDROID_HOME=$ANDROID_HOME" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
+
+          # Menyetujui lisensi Android SDK agar Gradle dapat mengunduh komponen otomatis
+          mkdir -p "$ANDROID_HOME/licenses"
+
+          if [ -f "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses || true
+          fi
+
+      - name: Prepare .env and Debug Keystore
+        run: |
+          echo "Memeriksa file konfigurasi wajib..."
+
+          if [ ! -f ".env" ]; then
+            if [ -f ".env.example" ]; then
+              cp .env.example .env
+              echo "File .env dibuat dari .env.example"
+            else
+              touch .env
+              echo "File .env kosong dibuat"
+            fi
+          fi
+
+          if [ ! -f "debug.keystore" ]; then
+            if [ -f "debug.keystore.base64" ]; then
+              base64 -d debug.keystore.base64 > debug.keystore
+              echo "debug.keystore berhasil dibuat dari Base64"
+            else
+              echo "Membuat debug.keystore dengan keytool..."
+              keytool -genkeypair -v \
+                -keystore debug.keystore \
+                -storepass android \
+                -alias androiddebugkey \
+                -keypass android \
+                -keyalg RSA \
+                -keysize 2048 \
+                -validity 10000 \
+                -dname "CN=Android Debug,O=Android,C=US"
+              echo "debug.keystore berhasil dibuat"
+            fi
+          fi
+
+      - name: Make Gradlew Executable
+        run: |
+          if [ -f "./gradlew" ]; then
+            chmod +x ./gradlew
+            echo "Izin eksekusi diberikan pada ./gradlew"
+          else
+            echo "::error::File gradlew tidak ditemukan."
+            exit 1
+          fi
+
+      - name: Build Debug APK with Gradle
+        run: |
+          echo "Memulai proses kompilasi APK dengan Gradle Wrapper..."
+          ./gradlew :app:assembleDebug \
+            --no-daemon \
+            --no-configuration-cache \
+            --stacktrace \
+            -Pandroid.builder.sdkDownload=true
+
+      - name: Collect APK Files
+        run: |
+          echo "Mengumpulkan file APK hasil build..."
+          mkdir -p build-apks
+
+          find app/build/outputs/apk \
+            -name "*.apk" \
+            -type f \
+            -exec cp -v {} build-apks/ \;
+
+          APK_COUNT=$(find build-apks -maxdepth 1 -type f -name "*.apk" | wc -l)
+
+          if [ "$APK_COUNT" -eq 0 ]; then
+            echo "::error::Tidak ada file APK yang ditemukan setelah assembleDebug!"
+            exit 1
+          fi
+
+          echo "Ditemukan $APK_COUNT file APK:"
+          ls -lh build-apks/
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fahfile-debug-apk
+          path: build-apks/*.apk
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Print Build Diagnostics on Failure
+        if: failure()
+        run: |
+          echo "=============================================="
+          echo "BUILD GAGAL - DETAIL DIAGNOSTIK"
+          echo "=============================================="
+          echo "Versi Java:"
+          java -version || true
+          echo "----------------------------------------------"
+          echo "Versi Gradle:"
+          if [ -f "./gradlew" ]; then
+            ./gradlew --version || true
+          fi
+          echo "----------------------------------------------"
+          echo "Daftar File Direktori:"
+          ls -la
+          echo "----------------------------------------------"
+          echo "Daftar File app/:"
+          ls -la app/ || true
+          echo "=============================================="
